@@ -65,6 +65,18 @@ export default defineConfig({
             '^/pingauth': {
                 target: 'https://localhost:7174/',
                 secure: false
+            },
+            '^/getThings': {
+                target: 'https://localhost:7174/',
+                secure: false
+            },
+            '^/auth/refresh' : {
+                target: 'https://localhost:7174/',
+                secure: false
+            },
+            '^/auth/register' : {
+                target: 'https://localhost:7174/',
+                secure: false
             }
         },
         port: 5173,

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { navigate } from "svelte-routing";
 
+    let name: string = "";
     let email: string = "";
     let password: string = "";
     let confirm: string = "";
@@ -20,7 +21,7 @@
 
     // A function to check if the form inputs are valid and set the message accordingly
     function validateForm() {
-        if (!email || !password || !confirm) {
+        if (!email || !password || !confirm || !name) {
             message = "Please fill in all the fields.";
             valid = false;
         } else if (!validateEmail(email)) {
@@ -40,7 +41,7 @@
         validateForm();
         if (valid) {
             const data = { email, password };
-            const response = await fetch("/register", {
+            const response = await fetch("/auth/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -57,6 +58,17 @@
 <div class="box">
 <form on:submit|preventDefault={submitForm}>
     <div class="table">
+        <div class="row">
+            <div class="col">Name:</div>
+            <div class="col">
+                <input
+                    type="name"
+                    placeholder="Enter your name"
+                    bind:value={name}
+                    on:input={validateForm}
+                />
+            </div>
+        </div>
         <div class="row">
             <div class="col">Email:</div>
             <div class="col">

@@ -58,7 +58,11 @@ namespace SvelteApp1.Server
                 return Results.Json(new { Email = email }); ; // return the email as a plain text response
             }).RequireAuthorization();
 
-
+            app.MapGet("getThings", (HttpContext context) =>
+            {
+                var things = new List<Thing>() {new Thing(13, "no"), new Thing(25, "never")};
+                return Results.Json(things);
+            });
 
 
             app.MapControllers();
@@ -68,4 +72,5 @@ namespace SvelteApp1.Server
             app.Run();
         }
     }
+    internal record Thing(int id, string text);
 }

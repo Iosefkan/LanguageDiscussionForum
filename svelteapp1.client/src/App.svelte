@@ -4,13 +4,14 @@
   import Login from './pages/Login.svelte';
   import Register from './pages/Register.svelte';
   import AuthorizeView from './AuthorizeView.svelte';
+  import GetThings from './pages/GetThings.svelte';
 </script>
 
 
   <Router>
-    <Route component={Home} />
     <Route path="/login" component={Login}/>
     <Route path="/register" component={Register}/>
+    <Route component={GetThings}/>
   </Router>
 
 
