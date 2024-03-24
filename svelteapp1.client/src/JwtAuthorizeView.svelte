@@ -1,17 +1,9 @@
 <script lang='ts'>
-    import Login from './pages/Login.svelte';
-    
-    export let url : string = '/';
-    
+    import JwtLogin from './pages/JwtLogin.svelte';
+    import { type ITokens, refTokenName, accTokenName } from './assets/ITokens';
+    export let url : string = '/fallback';
 
-    interface ITokens {
-      accessToken: string | null;
-      refreshToken: string | null;
-    }
-
-    let data;
-    const accTokenName : string = "accToken";
-    const refTokenName : string = "refToken";
+    let data : any;
 
     function isTokenExpired(token: string) : boolean {
       const base64Url = token.split(".")[1];
@@ -29,12 +21,16 @@
       return expired
     }
 
-    async function isNewTokensRecieved() : Promise<boolean> {
-      const response = await fetch("/auth/refresh", {
+    async function isNewTokensRecieved(tokenInfo : ITokens) : Promise<boolean> {
+      let tokensString : string = JSON.stringify(tokenInfo);
+      console.log(tokensString);
+      const response = await fetch("/fallback/auth/refresh", {
             method: "POST",
             headers: {
-              "Accept": "application/json"
+              "Accept": "application/json",
+              "Content-Type": "application/json"
             },
+            body: tokensString
         });
       let status : number  = response.status;
       
@@ -57,13 +53,16 @@
       }
    
       if (!token.accessToken || !token.refreshToken) {
-          return false;    
+        console.log('no tokens');
+        return false;    
       }
 
       if (isTokenExpired(token.accessToken)) {
-        if (!isNewTokensRecieved()){
+        if (!isNewTokensRecieved(token)){
+          console.log('no new tokens');
           return false;
         }
+        console.log('new tokens')
         token = {
           accessToken: localStorage.getItem(accTokenName),
           refreshToken: localStorage.getItem(refTokenName)
@@ -71,9 +70,10 @@
       }
       
       const response = await fetch(url, {
-            method: "POST",
+            method: "GET",
             headers: {
-              "Accept": "application/json", "Authorization": "Bearer " + token.accessToken
+              "Accept": "application/json",
+              "Authorization": "Bearer " + token.accessToken
             },
         });
       let status : number  = response.status;
@@ -81,19 +81,24 @@
       if (status != 200) {
           return false;    
       }
-      let j = await response.json();
-      data = j;
+      data = await response.json();
+      console.log(data);
+      console.log('fine');
       return true;
     }
 </script>
 
 
 {#await isAuthenticated()}
-<span>Проверка аутентификации</span>
+<div class="min-h-screen h-fit bg-gray-50 dark:bg-gray-900">
+  <div class="flex flex-col items-center my-6">
+    <p class="mt-6 mb-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white">Checking authentication...</p>
+  </div>
+</div>
 {:then authenticated}
   {#if (authenticated) }
-  <slot></slot>
+  <slot {data}></slot>
   {:else}
-    <Login/>
+    <JwtLogin/>
   {/if}
 {/await}

@@ -1,7 +1,12 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SvelteApp1.Server.Data;
 using System.Security.Claims;
+using SvelteApp1.Server.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace SvelteApp1.Server
 {
@@ -10,20 +15,59 @@ namespace SvelteApp1.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+            var config = builder.Configuration;
 
-            builder.Services.AddAuthorization();
-            builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-              .AddEntityFrameworkStores<ApplicationDbContext>();
+            string connection = config.GetConnectionString("DefaultConnection")!;
 
-            // Add services to the container.
+            builder.Services.AddTransient<ITokenService, TokenService>();
+            builder.Services.AddTransient<IEmailConfirmationService, EmailConfirmationService>();
+            builder.Services.AddTransient<RevokedJWTCashingService>();
+            builder.Services.AddTransient<IAuthorizationHandler, CacheHandler>();
+            builder.Services.AddTransient<QuestionMapperService>();
+            
+            builder.Services.AddHttpContextAccessor();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            
+
+            builder.Services.AddDbContext<ApplicationContext>(options => {
+                options.UseMySql(connection,
+                ServerVersion.AutoDetect(connection),
+                mySqlOptions =>
+                    mySqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null)
+            );});
+
+            builder.Services.AddControllers();
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = config[JwtConfig.ConfigIssuer],
+                    ValidateAudience = true,
+                    ValidAudience = config[JwtConfig.ConfigAudience],
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config[JwtConfig.ConfigKey]!)),
+                    ValidateIssuerSigningKey = true,
+                };
+            });
+
+            builder.Services.AddAuthorization(opts => {
+                opts.AddPolicy(JwtConfig.Polices.NotLoggedOut, policy => policy.Requirements.Add(new CacheRequirement()));
+            });
+
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddResponseCompression(options => {
+                options.EnableForHttps = true;
+                options.Providers.Add(new GzipCompressionProvider(new GzipCompressionProviderOptions()));
+            });
 
             var app = builder.Build();
 
@@ -39,38 +83,22 @@ namespace SvelteApp1.Server
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapIdentityApi<ApplicationUser>();
-
-            app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
-            {
-
-                await signInManager.SignOutAsync();
-                return Results.Ok();
-
-            }).RequireAuthorization();
-
-
-            app.MapGet("/pingauth", (ClaimsPrincipal user) =>
-            {
-                var email = user.FindFirstValue(ClaimTypes.Email); // get the user's email from the claim
-                return Results.Json(new { Email = email }); ; // return the email as a plain text response
-            }).RequireAuthorization();
-
-            app.MapGet("getThings", (HttpContext context) =>
-            {
-                var things = new List<Thing>() {new Thing(13, "no"), new Thing(25, "never")};
-                return Results.Json(things);
-            });
-
-
             app.MapControllers();
-
             app.MapFallbackToFile("/index.html");
 
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Xss-Protection", "1");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+
+                await next();
+            });
+        
             app.Run();
         }
     }
-    internal record Thing(int id, string text);
 }

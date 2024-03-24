@@ -46,38 +46,23 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/fallback/.*': {
                 target: 'https://localhost:7174/',
-                secure: false
+                secure: false,
+                rewrite: (path) => path.replace(/^\/fallback/, '')
             },
-            '^/register': {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/login': {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/logout': {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/pingauth': {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/getThings': {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/auth/refresh' : {
-                target: 'https://localhost:7174/',
-                secure: false
-            },
-            '^/auth/register' : {
-                target: 'https://localhost:7174/',
-                secure: false
-            }
+            // '^/auth/.*' : {
+            //     target: 'https://localhost:7174/',
+            //     secure: false
+            // },
+            // '^/quest/.*' : {
+            //     target: 'https://localhost:7174/',
+            //     secure: false
+            // },
+            // '^/audio/.*' : {
+            //     target: 'https://localhost:7174/',
+            //     secure: false
+            // }
         },
         port: 5173,
         https: {
