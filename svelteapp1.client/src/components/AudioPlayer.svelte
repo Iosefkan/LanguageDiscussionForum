@@ -20,7 +20,7 @@
 	}
 </script>
 
-<div class="player" class:paused>
+<div class="player mb-2 {paused ? "" : "shadow dark:shadow-gray-400 shadow-black"}" class:paused>
 	<audio
 		src={window.location.origin.concat("/fallback/audio/").concat(src)}
 		bind:currentTime={time}
@@ -53,7 +53,7 @@
 		<div class="time text-gray-700 dark:text-gray-400 flex items-center gap-2">
 			<span>{format(time)}</span>
 			<div
-				class="slider text-gray-700 dark:bg-gray-400"
+				class="slider bg-gray-700 dark:bg-gray-400"
 				on:pointerdown={e => {
 					const div = e.currentTarget;
 
@@ -78,7 +78,7 @@
 					});
 				}}
 			>
-				<div class="progress" style="--progress: {time / duration}%" />
+				<div class="progress dark:bg-gray-700 bg-gray-400" style="--progress: {time / duration}%" />
 			</div>
 			<span>{duration ? format(duration) : '--:--'}</span>
 		</div>
@@ -97,11 +97,6 @@
 		transition: filter 0.2s;
 		color: var(--fg-3);
 		user-select: none;
-	}
-
-	.player:not(.paused) {
-		color: var(--fg-1);
-		filter: drop-shadow(0.5em 0.5em 1em rgba(0,0,0,0.1));
 	}
 
 	button {
@@ -141,6 +136,5 @@
 	.progress {
 		width: calc(100 * var(--progress));
 		height: 100%;
-		background: var(--bg-3);
 	}
 </style>

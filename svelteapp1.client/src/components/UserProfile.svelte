@@ -8,7 +8,7 @@
 </script>
 
 <div class="p-16">
-    <div class="p-8 bg-white dark:bg-gray-900 shadow mt-24">
+    <div class="p-8 bg-gray-50 dark:bg-gray-900 mt-24">
       <div class="grid grid-cols-1">
         <div class="grid grid-cols-3 text-center order-last mt-5">
           <div>
