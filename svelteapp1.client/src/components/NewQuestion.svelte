@@ -111,7 +111,7 @@
             {#await languages}
             <div id="countries" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-t-lg block w-full px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">Loading languages...</div>
             {:then result} 
-            <select id="countries" bind:value={language} on:change={validateForm} class="bg-gray-50 border mt-6 border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <select id="countries" bind:value={language} on:change={validateForm} class="bg-gray-200 border mt-6 border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                 <option value={defaultLang} selected disabled hidden>{defaultLang.lang}</option>
                 {#each languages as lang}
                 <option value={lang}>
@@ -120,12 +120,12 @@
                 {/each}
             </select>
             {:catch error}
-            <div id="countries" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-t-lg block w-full px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">Error while loading languages.</div>
+            <div id="countries" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-t-lg block w-full px-4 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">Error while loading languages.</div>
             {/await}
         {/if}
-        <div class="rounded-t-lg bg-white px-4 py-2 dark:bg-gray-900">
+        <div class="rounded-t-lg bg-gray-100 px-4 py-2 dark:bg-gray-900">
         <label for="title" class="sr-only">Your title</label>
-        <input id="title" bind:value={title} on:input={validateForm} class="w-full border-0 px-0 text-base text-gray-900 focus:ring-0 dark:bg-gray-900 dark:text-white dark:placeholder-gray-300" maxlength="100" placeholder="Write a title..." />
+        <input id="title" bind:value={title} on:input={validateForm} class="w-full bg-gray-100 border-0 px-0 text-base text-gray-900 focus:ring-0 dark:bg-gray-900 dark:text-white dark:placeholder-gray-300" maxlength="100" placeholder="Write a title..." />
       </div>
       <div class="bg-white px-4 py-2 dark:bg-gray-800">
         <label for="question" class="sr-only">Your question</label>
